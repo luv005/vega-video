@@ -87,9 +87,9 @@ const CreatePage = () => {
 
       <MainContent>
         <Sidebar>
-          <StepIndicator active={step >= 1}>1. Choose your avatar</StepIndicator>
-          <StepIndicator active={step >= 2}>2. Write your script</StepIndicator>
-          <StepIndicator active={step >= 3}>3. Generate your video</StepIndicator>
+          <StepIndicator active={step >= 1 ? 'true' : 'false'}>1. Choose your avatar</StepIndicator>
+          <StepIndicator active={step >= 2 ? 'true' : 'false'}>2. Write your script</StepIndicator>
+          <StepIndicator active={step >= 3 ? 'true' : 'false'}>3. Generate your video</StepIndicator>
         </Sidebar>
 
         <ContentArea>
