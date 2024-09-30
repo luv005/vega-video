@@ -24,7 +24,7 @@ const IndexPage = () => {
       <GlobalStyle />
       <Container>
         <Header>
-          <Logo>Your Logo</Logo>
+          <Logo>Vega Video</Logo>
           <Nav>
             {isClient && (
               <>

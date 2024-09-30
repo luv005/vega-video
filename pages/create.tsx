@@ -2,6 +2,14 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import Image from 'next/image';
 
+interface Avatar {
+  id: number;
+  image: string;
+  name: string;
+  videoUrl?: string;
+  voice?: string;
+}
+
 const CreatePage = () => {
 
   const [step, setStep] = useState(1);
@@ -9,7 +17,7 @@ const CreatePage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
-  const [selectedAvatar, setSelectedAvatar] = useState(null);
+  const [selectedAvatar, setSelectedAvatar] = useState<Avatar | null>(null);
   const [selectedVoice, setSelectedVoice] = useState('');
 
   // Define avatars array with video URLs
@@ -24,15 +32,21 @@ const CreatePage = () => {
     setScript(generatedScript);
   };
 
-  const handleAvatarSelect = (avatar) => {
+  const handleAvatarSelect = (avatar: Avatar) => {
     setSelectedAvatar(avatar);
-    setSelectedVoice(avatar.voice);
+    setSelectedVoice(avatar.voice || '');
   };
 
   const sendGooeyRequest = async () => {
     setIsLoading(true);
     setError('');
     setStep(3); // Move to step 3 immediately
+
+    if (!selectedAvatar || !selectedAvatar.videoUrl) {
+      setError('Please select an avatar before generating the video.');
+      setIsLoading(false);
+      return;
+    }
 
     const payload = {
       "text_prompt": script,
@@ -52,7 +66,6 @@ const CreatePage = () => {
         },
         body: JSON.stringify(payload),
       });
-
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
@@ -87,9 +100,9 @@ const CreatePage = () => {
 
       <MainContent>
         <Sidebar>
-          <StepIndicator active={step >= 1 ? 'true' : 'false'}>1. Choose your avatar</StepIndicator>
-          <StepIndicator active={step >= 2 ? 'true' : 'false'}>2. Write your script</StepIndicator>
-          <StepIndicator active={step >= 3 ? 'true' : 'false'}>3. Generate your video</StepIndicator>
+          <StepIndicator isActive={step >= 1}>1. Choose your avatar</StepIndicator>
+          <StepIndicator isActive={step >= 2}>2. Write your script</StepIndicator>
+          <StepIndicator isActive={step >= 3}>3. Generate your video</StepIndicator>
         </Sidebar>
 
         <ContentArea>
@@ -101,7 +114,7 @@ const CreatePage = () => {
                   <AvatarItem
                     key={avatar.id}
                     onClick={() => handleAvatarSelect(avatar)}
-                    selected={selectedAvatar && selectedAvatar.id === avatar.id}
+                    selected={!!selectedAvatar && selectedAvatar.id === avatar.id}
                   >
                     <Image 
                       src={avatar.image} 
@@ -201,38 +214,65 @@ const NavLink = styled.a`
 const MainContent = styled.main`
   display: flex;
   margin-top: 40px;
+
+  @media (max-width: 767px) {
+    flex-direction: column;
+    margin-top: 20px;
+  }
 `;
 
 const Sidebar = styled.div`
   width: 250px;
   padding-right: 40px;
+  margin-bottom: 20px;
+
+  @media (max-width: 767px) {
+    width: 100%;
+    padding-right: 0;
+    margin-bottom: 10px;
+  }
 `;
 
-const StepIndicator = styled.div<{ active: boolean }>`
+const StepIndicator = styled.div<{ isActive: boolean }>`
   padding: 10px;
   margin-bottom: 10px;
-  background-color: ${props => props.active ? '#4f46e5' : '#e5e7eb'};
-  color: ${props => props.active ? '#ffffff' : '#4b5563'};
+  background-color: ${props => props.isActive ? '#4f46e5' : '#e5e7eb'};
+  color: ${props => props.isActive ? '#ffffff' : '#4b5563'};
   border-radius: 5px;
-  font-weight: ${props => props.active ? 'bold' : 'normal'};
+  font-weight: ${props => props.isActive ? 'bold' : 'normal'};
 `;
 
 const ContentArea = styled.div`
   flex: 1;
+  width: auto;
+
+  @media (max-width: 767px) {
+    width: 100%;
+  }
 `;
 
 const StepContent = styled.div`
   background-color: #ffffff;
-  padding: 40px;
+  padding: 20px;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  @media (max-width: 767px) {
+    padding: 15px;
+  }
 `;
 
 const AvatarGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
   margin-bottom: 20px;
+
+  @media (max-width: 767px) {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 8px;
+    margin-bottom: 15px;
+  }
 `;
 
 const AvatarItem = styled.div<{ selected: boolean }>`
@@ -289,9 +329,15 @@ const Button = styled.button`
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.3s;
+  width: 100%;
 
   &:hover {
     background-color: #4338ca;
+  }
+
+  @media (max-width: 767px) {
+    padding: 12px;
+    font-size: 14px;
   }
 `;
 
